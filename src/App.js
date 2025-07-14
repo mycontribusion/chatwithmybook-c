@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { marked } from 'marked';
+import './App.css';
+
 
 const API_URL = process.env.REACT_APP_API_URL;
 
