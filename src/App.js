@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { marked } from 'marked'; // Import the marked library
 
-// The backend (server.js) is responsible for reading and providing
-// the 'poetry_book.txt' content to the AI.
+// Define the API URL using environment variables.
+// This ensures that in a production build (like on Netlify),
+// process.env.REACT_APP_API_URL will be the value set in Netlify's UI.
+// For local development, it will pick up from .env.development.
+const API_URL = process.env.REACT_APP_API_URL;
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -19,10 +22,15 @@ function App() {
   const callBackendAPI = async (prompt) => {
     setIsLoading(true);
     try {
-      // IMPORTANT: Adjust this URL based on where your backend server is running.
-      // During development, it's typically 'http://localhost:5000/api/chat'.
-      // In production, if served by the same Express server, it might be '/api/chat'.
-      const response = await fetch('http://localhost:5000/api/chat', {
+      // IMPORTANT FIX: Use the API_URL variable instead of hardcoding localhost
+      if (!API_URL) {
+        console.error("API_URL is not defined. Check Netlify environment variables.");
+        setMessages(prevMessages => [...prevMessages, { text: "Configuration error: Cannot connect to AI. API URL is missing.", sender: 'ai', type: 'text' }]);
+        setIsLoading(false);
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/api/chat`, { // Correctly using API_URL
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: prompt }) // Send only the user's query to the backend
